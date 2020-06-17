@@ -26,7 +26,7 @@ def imageToWFA(img):
 			subImageF = getImageF(currentImage,j)
 			new_array = getSubImage(img_array,j)
 			img = Image.fromarray(new_array)
-			img.save("C:\\Users\\idriss\\Desktop\\python_workspace\\test"+str(j)+".png")
+			img.save("/home/idriss/Documents/GitHub/WFA-image/test"+str(j)+".png")
 			while len(int2base(i,4)) < n+1:
 				string = int2base(i,4)
 				while len(string) < n:
@@ -44,7 +44,7 @@ def imageToWFA(img):
 						item += 0.5*F[letterIndex][0]	
 					elif string[letterIndex] == "3":
 						item += 0.25*F[letterIndex][0]
-				print(str(j)+" "+string+" "+str(item))
+				#print(str(j)+" "+string+" "+str(item))
 				boolean = False				
 				if subImageF == item and (logiqualRegex1.match(string) or logiqualRegex2.match(string)):
 					if logiqualRegex1.match(string):
@@ -220,6 +220,6 @@ def Log2(x):
     return (math.log10(x) / math.log10(2));
 def isPowerOfTwo(n): 
     return (math.ceil(Log2(n)) == math.floor(Log2(n)));
-img = Image.open("C:\\Users\\idriss\\Desktop\\python_workspace\\"+sys.argv[1])
+img = Image.open("/home/idriss/Documents/GitHub/WFA-image/"+sys.argv[1])
 imageToWFA(img)    
    
