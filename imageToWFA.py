@@ -4,9 +4,10 @@ from PIL import Image
 import math
 import sys
 import re
-def imageToWFA(img):
-	logiqualRegex1 = re.compile('^0*10*$')
-	logiqualRegex2 = re.compile('^[0|2|3]+$')
+import SVD
+def imageToWFA(img,Maxerror):
+	Maxerror = Maxerror/10
+	print(Maxerror)
 	img = img.convert('LA')
 	img_array = numpy.array(img)
 	n = 1
@@ -24,50 +25,26 @@ def imageToWFA(img):
 		currentImage = images[currentState]	
 		for j in range(4):
 			subImageF = getImageF(currentImage,j)
-			new_array = getSubImage(img_array,j)
-			img = Image.fromarray(new_array)
-			img.save("/home/idriss/Documents/GitHub/WFA-image/test"+str(j)+".png")
-			while len(int2base(i,4)) < n+1:
-				string = int2base(i,4)
-				while len(string) < n:
-					string = "0"+string	
-				item = 0
-				stateExist = False		
-				# 0 for 0
-				# 1 for 1
-				# 2 for 0.5
-				# 3 for 0.25
-				for letterIndex in range(len(string)):
-					if string[letterIndex] == "1":
-						item += F[letterIndex][0]
-					elif string[letterIndex] == "2":
-						item += 0.5*F[letterIndex][0]	
-					elif string[letterIndex] == "3":
-						item += 0.25*F[letterIndex][0]
-				#print(str(j)+" "+string+" "+str(item))
-				boolean = False				
-				if subImageF == item and (logiqualRegex1.match(string) or logiqualRegex2.match(string)):
-					if logiqualRegex1.match(string):
-						for l in range(4):
-							if getImageF(currentImage,l) != getImageF(images[string.index('1')],l):
-								boolean = True
-					if boolean:
-						break			
-					stateF = item
-					stateExist = True
-					for letterIndex in range(len(string)):
-						if string[letterIndex] == "0":
-							A[j][currentState][letterIndex] = 0
-						elif string[letterIndex] == "1":
-							A[j][currentState][letterIndex] = 1
-						elif string[letterIndex] == "2":
-							A[j][currentState][letterIndex] = 0.5
-						elif string[letterIndex] == "3":
-							A[j][currentState][letterIndex] = 0.25
-					print(str(currentState+1)+" "+str(j)+" "+string+" "+str(item))
-					break							
-					
-				i = i + 1
+			new_array = getSubImage(currentImage,j)
+			MatrixA = getLinearMatrix(images)
+			B = getLinearMatrix([new_array])
+			x = SVD.calculWeights(MatrixA,B)
+			print(str(currentState+1)+" "+str(j))	
+			print(x)
+			error = 0
+			item = 0
+			for i in range(len(images)):
+				valX = x[i][0]
+				item += valX*getImageF(images[i])
+			print(item)
+			print(getImageF(new_array))
+			error = math.floor(abs(item-getImageF(new_array))*10000)/100
+			print(error)	
+			stateExist = False	
+			if error <= Maxerror:
+				stateExist = True
+				for xIndex in range(len(x)):
+					A[j][currentState][xIndex] = x[xIndex][0]
 			if subImageF != 0.0 and stateExist == False:
 				n += 1
 				J = 0	
@@ -81,10 +58,8 @@ def imageToWFA(img):
 				F.append([subImageF])
 				A[j][currentState][n-1] = 1
 				newImage = getSubImage(currentImage,j)
-				images.append(newImage)
-			i = 1
-		currentState += 1
-	#print(A[int(sys.argv[1])])
+				images.append(newImage)		
+		currentState += 1	
 	stringFile = str(n)+"\n"
 	for item in I:
 		stringFile += str(item)+" "
@@ -98,7 +73,7 @@ def imageToWFA(img):
 				stringFile += str(A[a][i][j])+" "
 		stringFile += "\n"			
 	file = open(sys.argv[2],"w")
-	file.write(stringFile)
+	file.write(stringFile)		
 
 
 
@@ -169,7 +144,7 @@ def getImageF(img_array,a=-1):
 				j = j + 1
 			i += 1
 			j = J	
-		return math.floor((somme/((size*size)/m)/255)*100)/100
+		return somme/((size*size)/m)/255
 def getSubImage(img_array,a):
 	if len(img_array) != len(img_array[0]):
 		print("just w = h images !")
@@ -177,8 +152,7 @@ def getSubImage(img_array,a):
 		print("just 2^k x 2^k images !")	
 	else:
 		size = len(img_array)
-		newSize = int(size / 2)
-		new_array = numpy.empty([newSize,newSize,2], dtype=numpy.uint8)
+		new_array = numpy.empty([size,size,2], dtype=numpy.uint8)
 		h = 0
 		k = 0
 		if a == 0:
@@ -208,18 +182,31 @@ def getSubImage(img_array,a):
 		while i < sizeI:
 			while j < sizeJ:
 				new_array[h][k] = img_array[i][j]
+				new_array[h+1][k] = img_array[i][j]
+				new_array[h][k+1] = img_array[i][j]
+				new_array[h+1][k+1] = img_array[i][j]
 				j = j + 1
-				k = k + 1
+				k = k + 2
 			i += 1
-			h += 1
+			h += 2
 			j = J
 			k = 0	
 		return new_array				
-
+def getLinearMatrix(images):
+	A = numpy.empty([len(images[0][0]) ** 2,len(images)])
+	for J in range(len(images)):
+		I = 0
+		img_array = images[J]
+		for i in range(len(img_array)):
+			for j in range(len(img_array)):
+				A[I][J] = img_array[i][j][0]
+				I += 1
+	return A		
 def Log2(x): 
     return (math.log10(x) / math.log10(2));
 def isPowerOfTwo(n): 
     return (math.ceil(Log2(n)) == math.floor(Log2(n)));
 img = Image.open("/home/idriss/Documents/GitHub/WFA-image/"+sys.argv[1])
-imageToWFA(img)    
+imageToWFA(img,int(sys.argv[3]))
+   
    
