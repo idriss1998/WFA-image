@@ -35,7 +35,6 @@ def fillImage(wfa,k):
 		C = C.dot(wfa.F)
 		grey = round(C[0]	* 255)
 		new_array[x][y] = [grey,255]
-		print("("+str(x)+","+str(y)+") "+string)
 		x = int(0)
 		y = int(0)
 		resolutionInter	= int((2 ** k)/2)

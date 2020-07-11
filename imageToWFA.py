@@ -5,6 +5,8 @@ import math
 import sys
 import re
 import SVD
+from WFA import WFA
+from fileHandler import writeWFAInFile
 def imageToWFA(img,Maxerror):
 	Maxerror = Maxerror/10
 	img = img.convert('LA')
@@ -17,9 +19,6 @@ def imageToWFA(img,Maxerror):
 	A = [[[0]],[[0]],[[0]],[[0]]]
 	F[0][0] = getImageF(img_array)
 	I[0] = 1
-	i = 1
-	string = ""
-	currentImage = images[currentState]
 	while currentState < n:
 		currentImage = images[currentState]	
 		for j in range(4):
@@ -28,18 +27,11 @@ def imageToWFA(img,Maxerror):
 			MatrixA = getLinearMatrix(images)
 			B = getLinearMatrix([new_array])
 			x = SVD.calculWeights(MatrixA,B)
-				
-			print(x)
-			print(str(currentState+1)+" "+str(j))
-			error = 0
 			item = 0
 			for i in range(len(images)):
 				valX = x[i][0]
 				item += valX*getImageF(images[i])
-			print(item)
-			print(getImageF(new_array))
 			error = math.floor(abs(item-getImageF(new_array))*10000)/100
-			print(error)	
 			stateExist = False	
 			if error <= Maxerror:
 				stateExist = True
@@ -59,46 +51,9 @@ def imageToWFA(img,Maxerror):
 				A[j][currentState][n-1] = 1
 				newImage = getSubImage(currentImage,j)
 				images.append(newImage)		
-		currentState += 1	
-	stringFile = str(n)+"\n"
-	for item in I:
-		stringFile += str(item)+" "
-	stringFile += "\n"
-	for item in F:
-		stringFile += str(item[0])+" "
-	stringFile += "\n"
-	for a in range(len(A)):
-		for i in range(len(A[a])):
-			for j in range(len(A[a][i])):
-				stringFile += str(A[a][i][j])+" "
-		stringFile += "\n"			
-	file = open(sys.argv[2],"w")
-	file.write(stringFile)		
-
-
-
-digs = string.digits + string.ascii_letters
-def int2base(x, base):
-    if x < 0:
-        sign = -1
-    elif x == 0:
-        return digs[0]
-    else:
-        sign = 1
-
-    x *= sign
-    digits = []
-
-    while x:
-        digits.append(digs[int(x % base)])
-        x = int(x / base)
-
-    if sign < 0:
-        digits.append('-')
-
-    digits.reverse()
-
-    return ''.join(digits)
+		currentState += 1
+	wfa = WFA(n,I,F,A)
+	return wfa
 
 def getImageF(img_array,a=-1):
 	if len(img_array) != len(img_array[0]):
@@ -207,6 +162,7 @@ def Log2(x):
 def isPowerOfTwo(n): 
     return (math.ceil(Log2(n)) == math.floor(Log2(n)));
 img = Image.open("C:\\Users\\idriss\\Documents\\GitHub\\WFA-image\\"+sys.argv[1])
-imageToWFA(img,int(sys.argv[3]))
+wfa = imageToWFA(img,int(sys.argv[3]))
+writeWFAInFile(wfa,sys.argv[2])
    
    

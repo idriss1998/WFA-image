@@ -1,16 +1,27 @@
 from WFA import WFA
 import numpy
+import struct
 def readWFAFromFile(filePath):
-	f = open(filePath,"r")
-	lines = f.readlines()
-	NumberOfStats = int(lines[0])
-	wfa = WFA(NumberOfStats,numpy.empty([NumberOfStats]),numpy.empty([NumberOfStats,1]),numpy.empty([4,NumberOfStats,NumberOfStats]))
-	for i in range(NumberOfStats):
-		wfa.I[i] = lines[1].split(" ")[i]
-		wfa.F[i][0] = lines[2].split(" ")[i]
-		for j in range(NumberOfStats):
-			wfa.A[0][i][j] = lines[3].split(" ")[i*NumberOfStats+j]
-			wfa.A[1][i][j] = lines[4].split(" ")[i*NumberOfStats+j]
-			wfa.A[2][i][j] = lines[5].split(" ")[i*NumberOfStats+j]
-			wfa.A[3][i][j] = lines[6].split(" ")[i*NumberOfStats+j]
-	return wfa	
+	f = open(filePath,"rb")
+	NumberOfStates = int(struct.unpack('f',f.read(4))[0])
+	wfa = WFA(NumberOfStates,numpy.empty([NumberOfStates]),numpy.empty([NumberOfStates,1]),numpy.empty([4,NumberOfStates,NumberOfStates]))
+	for i in range(NumberOfStates):
+		wfa.I[i] = struct.unpack('f',f.read(4))[0]
+	for i in range(NumberOfStates):
+		wfa.F[i][0] = struct.unpack('f',f.read(4))[0]
+	for a in range(4):	
+		for i in range(NumberOfStates):	
+			for j in range(NumberOfStates):
+				wfa.A[a][i][j] = struct.unpack('f',f.read(4))[0]
+	return wfa
+def writeWFAInFile(wfa,fileName):
+	file = open(fileName+'.wfa',"wb")
+	file.write(struct.pack('f',wfa.n))
+	for item in wfa.I:
+		file.write(struct.pack('f',item))
+	for item in wfa.F:
+		file.write(struct.pack('f',item[0]))
+	for a in range(len(wfa.A)):
+		for i in range(len(wfa.A[a])):
+			for j in range(len(wfa.A[a][i])):
+				file.write(struct.pack('f',wfa.A[a][i][j]))					
