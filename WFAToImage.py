@@ -68,4 +68,4 @@ def int2base(x, base):
     return ''.join(digits)
 img_array = fillImage(wfa,int(sys.argv[3]))
 img = Image.fromarray(img_array)		
-img.save("/home/idriss/Documents/GitHub/WFA-image/"+sys.argv[2])
+img.save("C:\\Users\\idriss\\Documents\\GitHub\\WFA-image\\"+sys.argv[2])

@@ -7,7 +7,6 @@ import re
 import SVD
 def imageToWFA(img,Maxerror):
 	Maxerror = Maxerror/10
-	print(Maxerror)
 	img = img.convert('LA')
 	img_array = numpy.array(img)
 	n = 1
@@ -29,8 +28,9 @@ def imageToWFA(img,Maxerror):
 			MatrixA = getLinearMatrix(images)
 			B = getLinearMatrix([new_array])
 			x = SVD.calculWeights(MatrixA,B)
-			print(str(currentState+1)+" "+str(j))	
+				
 			print(x)
+			print(str(currentState+1)+" "+str(j))
 			error = 0
 			item = 0
 			for i in range(len(images)):
@@ -206,7 +206,7 @@ def Log2(x):
     return (math.log10(x) / math.log10(2));
 def isPowerOfTwo(n): 
     return (math.ceil(Log2(n)) == math.floor(Log2(n)));
-img = Image.open("/home/idriss/Documents/GitHub/WFA-image/"+sys.argv[1])
+img = Image.open("C:\\Users\\idriss\\Documents\\GitHub\\WFA-image\\"+sys.argv[1])
 imageToWFA(img,int(sys.argv[3]))
    
    
