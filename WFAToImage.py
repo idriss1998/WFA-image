@@ -5,7 +5,7 @@ import math
 import sys
 from fileHandler import readWFAFromFile
 wfa = readWFAFromFile(sys.argv[1])
-def fillImage(wfa,k):
+def WFAToImage(wfa,k):
 	size = 2 ** k
 	new_array = numpy.empty([size,size,2], dtype=numpy.uint8)
 	C = wfa.I
@@ -65,6 +65,6 @@ def int2base(x, base):
     digits.reverse()
 
     return ''.join(digits)
-img_array = fillImage(wfa,int(sys.argv[3]))
+img_array = WFAToImage(wfa,int(sys.argv[3]))
 img = Image.fromarray(img_array)		
 img.save("C:\\Users\\idriss\\Documents\\GitHub\\WFA-image\\"+sys.argv[2])
